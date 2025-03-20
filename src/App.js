@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { jsPDF } from "jspdf";
 
 function App() {
   const [url, setUrl] = useState(""); // Stores the input URL
@@ -33,6 +34,7 @@ function App() {
     console.log("Extracted UUID:", extractedUuid); // Debugging
     fetchTruckData(extractedUuid);
   };
+
   const fetchTruckData = async (uuid) => {
     try {
       const response = await axios.post("https://garage-backend.onrender.com/getListing", {
@@ -51,6 +53,60 @@ function App() {
       setError("Error fetching truck data. Please try again.");
       console.error(error);
     }
+  };
+
+  // Convert image URL to Base64 
+  // bc jsPDF does not support loading external images directly from URL
+  const getBase64Image = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = url;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const base64 = canvas.toDataURL("image/jpeg");
+        resolve(base64);
+      };
+      img.onerror = (err) => reject(err);
+    });
+  };
+
+  const generatePDF = async () => {
+    if (!truckData) return;
+
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Your Fire Truck Invoice", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Title: ${truckData.listingTitle || "N/A"}`, 20, 40);
+    doc.text(`Year: ${truckData.itemAge || "N/A"}`, 20, 50);
+    doc.text(`Location: ${truckData.addressState || "N/A"}`, 20, 60);
+    doc.text(`Price: $${truckData.sellingPrice || "N/A"}`, 20, 70);
+    doc.text(`Mileage: ${truckData.mileage ? truckData.mileage + " miles" : "N/A"}`, 20, 80);
+    doc.text(`Tank Size: ${truckData.tankSize ? truckData.tankSize + " gallons" : "N/A"}`, 20, 90);
+    doc.text(`Pump Size: ${truckData.pumpSize ? truckData.pumpSize + " GPM" : "N/A"}`, 20, 100);
+
+    doc.setFontSize(10);
+    doc.text("Description:", 20, 120);
+    doc.text(truckData.listingDescription ? truckData.listingDescription.substring(0, 250) + "..." : "N/A", 20, 130, { maxWidth: 170 });
+
+    // Add truck image
+    if (truckData.imageUrls?.length > 0) {
+      try {
+        const base64Image = await getBase64Image(truckData.imageUrls[0]); // Convert first image
+        doc.addImage(base64Image, "JPEG", 20, 150, 80, 60); // Position image
+      } catch (error) {
+        console.error("Failed to load image:", error);
+      }
+    }
+
+    doc.save("fire_truck_invoice.pdf");
   };
 
   return (
@@ -96,6 +152,9 @@ function App() {
           ) : (
             <p>No images available</p>
           )}
+          <button onClick={generatePDF} style={{ marginTop: "20px", padding: "10px", cursor: "pointer" }}>
+            Download Invoice
+          </button>
         </div>
       )}
     </div>
