@@ -1,12 +1,20 @@
 import { useState } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
+import emailjs from "emailjs-com";
 
 function App() {
   const [url, setUrl] = useState(""); // stores the input URL
   const [uuid, setUuid] = useState(""); // extracts UUID
   const [error, setError] = useState("");
   const [truckData, setTruckData] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pdfGenerated, setPdfGenerated] = useState(false);
+  const [pdfData, setPdfData] = useState(null);
+  const [pdfBase64, setPdfBase64] = useState("");
 
 
   const handleExtractUUID = () => {
@@ -76,7 +84,15 @@ function App() {
   };
 
   const generatePDF = async () => {
-    if (!truckData) return;
+    if (!truckData || !name || !email) {
+      alert("Please enter your name and email."); //do more specific error checking later
+      return;
+    }
+    setLoading(true);
+    setPdfGenerated(false);
+
+    /* HERE!!!!!!!!*/
+
 
     const doc = new jsPDF();
 
@@ -221,7 +237,48 @@ function App() {
     doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 180, y);
 
     // Save the PDF
-    doc.save("fire_truck_invoice.pdf");
+    // Convert PDF to Base64
+    const pdfBase64String = doc.output("datauristring").split(",")[1];
+    setPdfBase64(pdfBase64String);
+
+
+    setTimeout(() => {
+      setLoading(false);
+      setPdfGenerated(true);
+    }, 1500);
+  };
+
+  const sendEmail = async () => {
+    if (!pdfBase64) {
+      alert("Please generate the invoice first.");
+      return;
+    }
+
+    const templateParams = {
+      name: name,
+      email: email,
+      title: truckData.listingTitle, // Fire truck title
+      pdf_attachment: pdfBase64, // Base64-encoded PDF
+    };
+
+    try {
+      const response = await emailjs.send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID,
+        process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+        templateParams,
+        process.env.REACT_APP_EMAILJS_USER_ID
+      );
+
+
+      if (response.status === 200) {
+        alert("Email sent successfully with the PDF attachment!");
+      } else {
+        alert("Failed to send email.");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      alert("An error occurred while sending the email.");
+    }
   };
 
   return (
@@ -259,21 +316,85 @@ function App() {
 
           {truckData.imageUrls?.length > 0 ? (
             <div>
-              <h3>Images:</h3>
-              {truckData.imageUrls.map((image, index) => (
-                <img key={index} src={image} alt="Truck" style={{ width: "100%", maxWidth: "400px", marginTop: "10px" }} />
-              ))}
+              <h3>Image:</h3>
+              <img
+                src={truckData.imageUrls[0]}
+                alt="Truck"
+                style={{ width: "100%", maxWidth: "400px", marginTop: "10px" }}
+              />
             </div>
           ) : (
             <p>No images available</p>
           )}
-          <button onClick={generatePDF} style={{ marginTop: "20px", padding: "10px", cursor: "pointer" }}>
-            Download Invoice
+          <button
+            onClick={() => setShowForm(true)}
+            style={{ marginTop: "20px", padding: "10px", cursor: "pointer" }}
+          >
+            Generate PDF Invoice
           </button>
+        </div>
+      )}
+
+      {showForm && (
+        <div style={{ maxWidth: "400px", margin: "auto", textAlign: "left" }}>
+          <h2>Get PDF Invoice</h2>
+          <p>Fill out the information below to receive a personalized PDF invoice.</p>
+
+          <label>Name (First and Last):</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ width: "100%", padding: "8px", margin: "8px 0" }}
+          />
+
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ width: "100%", padding: "8px", margin: "8px 0" }}
+          />
+
+          <button
+            onClick={generatePDF}
+            style={{ padding: "12px", fontSize: "16px", cursor: "pointer", marginTop: "10px" }}
+          >
+            Generate Invoice
+          </button>
+
+          {loading && <p>Loading...</p>}
+
+          {pdfGenerated && (
+            <div style={{ marginTop: "20px" }}>
+              <p>Your PDF invoice has been successfully generated!</p>
+
+              <button
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = `data:application/pdf;base64,${pdfBase64}`;
+                  link.download = "fire_truck_invoice.pdf";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                style={{ padding: "10px", marginRight: "10px" }}
+              >
+                Download PDF
+              </button>
+
+              <button
+                onClick={sendEmail}
+                style={{ padding: "10px", backgroundColor: "#007bff", color: "#fff", border: "none", cursor: "pointer" }}
+              >
+                Email Me
+              </button>
+            </div>
+          )}
+
         </div>
       )}
     </div>
   );
 }
-
 export default App;
