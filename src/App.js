@@ -13,7 +13,6 @@ function App() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [pdfGenerated, setPdfGenerated] = useState(false);
-  const [pdfData, setPdfData] = useState(null);
   const [pdfBase64, setPdfBase64] = useState("");
 
 
@@ -91,9 +90,6 @@ function App() {
     setLoading(true);
     setPdfGenerated(false);
 
-    /* HERE!!!!!!!!*/
-
-
     const doc = new jsPDF();
 
     const formattedDate = new Date().toLocaleDateString("en-US", {
@@ -111,7 +107,7 @@ function App() {
       console.error("Error loading logo:", error);
     }
 
-    // Garage name, address,
+    // Garage name, address look up
     const textX = 43;
     const textY = 30;
 
@@ -139,7 +135,7 @@ function App() {
     const issueDateText = "Issue Date"; //maybe cut??
     const dateText = formattedDate;
 
-    const invoiceY = 30;  // invoice # position
+    const invoiceY = 30;  // invoice# position
     const issueDateY = invoiceY + textPadding;  // issue date below
     const formattedDateY = issueDateY + textPadding; // formatted date below 'issue date'
 
@@ -160,7 +156,7 @@ function App() {
     doc.text("Invoice", 10, y);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("This invoice contains the purchase details of your fire truck.", 10, y + 6);
+    doc.text("This invoice contains details of your fire truck.", 10, y + 6);
 
     // three-column section: "Bill To" | "Details" | "Payment" 
     y += 30;
@@ -177,26 +173,30 @@ function App() {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("Lucy Hecht", 10, y + 6);
-    doc.text("Email: lucy@example.com", 10, y + 12);
-    doc.text("Phone: 123-456-7890", 10, y + 18);
+    doc.text(name, 10, y + 6);
+    doc.text(`Email: ${email}`, 10, y + 12);
 
-    doc.text("Truck Model:", 73, y + 6);
-    doc.text(truckData.listingTitle, 73, y + 12);
+    // wrap DETAILS if title is too long
+    const detailsX = 73;
+    const detailsY = y + 6;
+    const detailsMaxWidth = 50;
+    const detailsText = `Truck Model: ${truckData.listingTitle}`;
+    const wrappedDetails = doc.splitTextToSize(detailsText, detailsMaxWidth);
+    doc.text(wrappedDetails, detailsX, detailsY);
+    
+    doc.text(`Payment due: $${truckData.sellingPrice?.toLocaleString()}`, 142, y + 6);
+    
+    const detailsHeight = wrappedDetails.length * 6;
+    y += Math.max(38, detailsHeight);
 
-    doc.text("Due Date:", 142, y + 6);
-    doc.text("March 30, 2025", 142, y + 12);
-    doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 142, y + 18);
-
-    y += 38;
     doc.setFont("helvetica", "bold");
 
     doc.setLineWidth(0.4);
     doc.line(10, y, 200, y);
 
     // table headers
-    const headerPadding = 8; // Space between the lines and text
-    const rowSpacing = 12; // Space between headers and first row
+    const headerPadding = 8; 
+    const rowSpacing = 12;
 
     doc.text("ITEM", 10, y + headerPadding);
     doc.text("QTY", 120, y + headerPadding);
@@ -224,7 +224,6 @@ function App() {
     doc.setFont("helvetica", "normal");
     doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 180, y);
 
-
     y += 8;
     doc.setFont("helvetica", "bold");
     doc.text("Tax:", 150, y);
@@ -236,11 +235,81 @@ function App() {
     doc.text("Total Due:", 150, y);
     doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 180, y);
 
+    // bottom of the page - image and more details
+    y = 225;
+
+    // left side - Truck image
+    if (truckData.imageUrls?.length > 0) {
+      try {
+        const base64Image = await getBase64Image(truckData.imageUrls[0]);
+
+        const imgX = 10;  
+        const imgY = 225; 
+        const imgWidth = 85;
+        const imgHeight = 65;
+
+        doc.addImage(base64Image, "JPEG", imgX, imgY, imgWidth, imgHeight);
+
+      } catch (error) {
+        console.error("Error loading truck image:", error);
+      }
+    }
+
+    // right side - two columns of text
+    const column1X = 110;
+    const column2X = 155;
+    y = 230;
+    doc.setFont("helvetica", "bold");
+    doc.text("More Details:", column1X, y);
+    doc.setFont("helvetica", "normal");
+
+    y += 6;
+    const description = truckData.listingDescription || "No additional details available";
+
+    const lines = description.split("\n");
+
+    const columnWidth = 40;
+
+    let firstColumnText = [];
+    let secondColumnText = [];
+    let overflowText = [];
+    let lineCount = 0;
+    const maxLinesFirstColumn = 12; // max # of lines before switching to column 2
+    const maxLinesTotal = 24;
+
+    // process each line, add bullet points, wrap text
+    lines.forEach((line) => {
+      const wrappedLines = doc.splitTextToSize(`• ${line}`, columnWidth);
+      wrappedLines.forEach((wrappedLine) => {
+        if (lineCount < maxLinesFirstColumn) {
+          firstColumnText.push(wrappedLine);
+        } else if (lineCount < maxLinesTotal) {
+          secondColumnText.push(wrappedLine);
+        } else if (lineCount === maxLinesTotal) {
+          secondColumnText.push("Continued on the next page..."); 
+        } else {
+          overflowText.push(wrappedLine); // Move extra text to new page
+        }
+        lineCount++;
+      });
+    });
+
+    // print columns
+    doc.text(firstColumnText, column1X, y);
+    doc.text(secondColumnText, column2X, y);
+
+    // if text > 24 lines, overflow on next page
+    if (overflowText.length > 0) {
+      doc.addPage();
+      y = 30; // Reset position on new page
+
+      doc.setFont("helvetica", "normal");
+      doc.text(overflowText, column1X, y);
+    }
+
     // Save the PDF
-    // Convert PDF to Base64
     const pdfBase64String = doc.output("datauristring").split(",")[1];
     setPdfBase64(pdfBase64String);
-
 
     setTimeout(() => {
       setLoading(false);
@@ -257,8 +326,8 @@ function App() {
     const templateParams = {
       name: name,
       email: email,
-      title: truckData.listingTitle, // Fire truck title
-      pdf_attachment: pdfBase64, // Base64-encoded PDF
+      title: truckData.listingTitle,
+      pdf_attachment: pdfBase64,
     };
 
     try {
