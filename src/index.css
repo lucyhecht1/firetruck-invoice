@@ -16,6 +16,25 @@ code {
     monospace;
 }
 
+.email-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  z-index: 1000;
+}
+
+.email-banner.success {
+  background-color: green;
+}
+
+.email-banner.error {
+  background-color: red;
+}
+
 .garage-main-container {
   max-width: 800px;
   margin: 50px auto;
@@ -132,6 +151,11 @@ code {
   margin-top: 20px;
   text-align: left;
 }
+
+.description-text {
+  white-space: pre-wrap;
+}
+
 
 .modal-close-button {
   position: absolute;
@@ -255,7 +279,6 @@ code {
 
 .modal-success p {
   color: #2ca132;
-  /* green */
   margin-bottom: 16px;
 }
 
@@ -277,6 +300,7 @@ code {
   margin-top: -2px;
   margin-left: 4px;
 }
+
 /* using firetruck instead loool */
 .spinner {
   border: 4px solid #f3f3f3;

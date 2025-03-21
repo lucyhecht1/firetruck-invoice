@@ -96,7 +96,7 @@ function App() {
 
   // Convert image URL to Base64 
   // bc jsPDF does not support loading external images directly from URL
-  const getBase64Image = (url) => {
+  const getBase64JPEGImage = (url) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "Anonymous";
@@ -107,12 +107,13 @@ function App() {
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
-        const base64 = canvas.toDataURL("image/jpeg");
+        const base64 = canvas.toDataURL("image/jpeg", 0.85); // 85% quality
         resolve(base64);
       };
       img.onerror = (err) => reject(err);
     });
   };
+
 
   const generatePDF = async () => {
     const isValid = validateFields();
@@ -131,11 +132,12 @@ function App() {
 
     const logoUrl = "/logo-2.jpeg";
     try {
-      const base64Logo = await getBase64Image(logoUrl);
-      doc.addImage(base64Logo, "jpeg", 10, 18, 30, 30);
+      const base64Logo = await getBase64JPEGImage(logoUrl);
+      doc.addImage(base64Logo, "JPEG", 10, 18, 30, 30);
+
       doc.link(10, 18, 30, 30, { url: "https://www.withgarage.com/" });
     } catch (error) {
-      console.error("Error loading logo:", error);
+      console.error("Error loading WebP logo:", error);
     }
 
     // Garage name, address look up
@@ -354,8 +356,9 @@ function App() {
 
     if (truckData.imageUrls?.length > 0) {
       try {
-        const base64Image = await getBase64Image(truckData.imageUrls[0]);
+        const base64Image = await getBase64JPEGImage(truckData.imageUrls[0]);
         doc.addImage(base64Image, "JPEG", imgX, imgY, imgWidth, imgHeight);
+
       } catch (error) {
         console.error("Error loading truck image:", error);
       }
@@ -449,6 +452,9 @@ function App() {
       return;
     }
 
+    const pdfSizeInBytes = (pdfBase64.length * 3) / 4; // Base64 is approximately 33% larger
+    console.log(`PDF size: ${pdfSizeInBytes} bytes`);
+
     const templateParams = {
       name: name,
       email: email,
@@ -457,6 +463,8 @@ function App() {
     };
 
     try {
+      setLoading(true); // show firetruck loader
+
       const response = await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID,
         process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
@@ -464,20 +472,44 @@ function App() {
         process.env.REACT_APP_EMAILJS_USER_ID
       );
 
-
+      // email is successfully sent
       if (response.status === 200) {
-        alert("Email sent successfully with the PDF attachment!");
+        setShowForm(false);
+        setBanner({
+          message: "Your email has been sent!",
+          isError: false,
+        });
+        setTimeout(() => setBanner(null), 5000);
       } else {
-        alert("Failed to send email.");
+        setShowForm(false);
+        setBanner({
+          message: "An error occurred: Your email cannot be sent.",
+          isError: true,
+        });
+        setTimeout(() => setBanner(null), 5000);
       }
     } catch (error) {
       console.error("Error sending email:", error);
-      alert("An error occurred while sending the email.");
+      setShowForm(false);
+      setBanner({
+        message: "An error occurred while sending the email.",
+        isError: true,
+      });
+      setTimeout(() => setBanner(null), 5000);
+    } finally {
+      setLoading(false); // Hide loader
     }
   };
 
+  const [banner, setBanner] = useState(null);
+
   return (
     <div className="garage-main-container">
+      {banner && (
+        <div className={`email-banner ${banner.isError ? "error" : "success"}`}>
+          {banner.message}
+        </div>
+      )}
       <div style={{ textAlign: "center", padding: "20px" }}>
         <header className="garage-header">
           <div className="garage-header-content">
@@ -571,8 +603,17 @@ function App() {
 
             <div className="truck-description">
               <p><strong>Description:</strong></p>
-              <p>{truckData.listingDescription || "No description available"}</p>
+              <p className="description-text">
+                {truckData.listingDescription
+                  ? truckData.listingDescription.slice(0, 100) + "..."  // Limit to first 6 lines/characters
+                  : "No description available"
+                }
+              </p>
+              {truckData.listingDescription && truckData.listingDescription.length > 300 && (
+                <p><em>See more details when you process an invoice.</em></p>
+              )}
             </div>
+
             <br></br>
 
             <button
@@ -663,23 +704,33 @@ function App() {
                         <p className="modal-loading">Your PDF invoice is being generated...</p>
                       </>
                     )}
-
                   </>
                 )}
 
                 {pdfGenerated && (
                   <div className="modal-success">
-                    <p>Your PDF invoice has been successfully generated!</p>
+                    {loading ? (
+                      <div className="firetruck-loader-container">
+                        <div className="firetruck-loader">🚒</div>
+                      </div>
+                    ) : (
+                      <p>Your PDF invoice has been successfully generated!</p>
+                    )}
 
                     <button onClick={downloadPDF} className="orange-button">
                       Download PDF
                     </button>
 
-                    <button onClick={sendEmail} className="white-outline-button">
-                      Email Me
+                    <button
+                      onClick={sendEmail}
+                      className="white-outline-button"
+                      disabled={loading} // disable the button while loading
+                    >
+                      {loading ? "Sending Email..." : "Email Me"}
                     </button>
                   </div>
                 )}
+
               </div>
             </div>
           </div>
