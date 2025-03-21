@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useRef } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import emailjs from "emailjs-com";
@@ -16,6 +18,28 @@ function App() {
   const [pdfGenerated, setPdfGenerated] = useState(false);
   const [pdfBase64, setPdfBase64] = useState("");
 
+  //for error handling
+  const urlInputRef = useRef(null);
+  const getDetailsButtonRef = useRef(null);
+  const nameRef = useRef(null);
+  const emailRef = useRef(null);
+  const generateButtonRef = useRef(null);
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  //close modal using esc
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && showForm) {
+        setShowForm(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showForm]);
 
   const handleExtractUUID = () => {
     setError("");
@@ -29,18 +53,25 @@ function App() {
     // URL starts with "www.withgarage.com/listing/"
     if (!normalizedUrl.startsWith("withgarage.com/listing/")) {
       setError("Invalid URL. Please enter a valid Garage fire truck listing URL.");
+      getDetailsButtonRef.current?.blur();
+      urlInputRef.current?.focus();
       return;
     }
-    // URL has a valid UUID (8-4-4-4-12)
+    // URL has invalid UUID (8-4-4-4-12)
     if (!match) {
       setError("Invalid URL format. Please enter a valid fire truck listing URL.");
+      getDetailsButtonRef.current?.blur();
+      urlInputRef.current?.focus();
       return;
     }
 
+    //all valid
     const extractedUuid = match[1];
     setUuid(extractedUuid);
     console.log("Extracted UUID:", extractedUuid); // debugging
     fetchTruckData(extractedUuid);
+
+    getDetailsButtonRef.current?.blur();
   };
 
   const fetchTruckData = async (uuid) => {
@@ -84,10 +115,9 @@ function App() {
   };
 
   const generatePDF = async () => {
-    if (!truckData || !name || !email) {
-      alert("Please enter your name and email."); //do more specific error checking later
-      return;
-    }
+    const isValid = validateFields();
+    if (!isValid) return;
+
     setLoading(true);
     setPdfGenerated(false);
 
@@ -114,11 +144,18 @@ function App() {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.text("Garage Technologies, Inc.", textX, textY);
+    const companyText = "Garage Technologies, Inc.";
+    doc.text(companyText, textX, textY);
+    // Make company name clickable
+    const textW = doc.getTextWidth(companyText);
+    doc.link(textX, textY - 3, textW, 6, {
+      url: "https://www.withgarage.com/",
+    });
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("123 Firetruck Lane", textX, textY + 6);
-    doc.text("New York, NY, USA", textX, textY + 12);
+    doc.text("17 W 20th St", textX, textY + 6);
+    doc.text("New York, NY, 10011", textX, textY + 12);
 
     let y = 30;
 
@@ -133,16 +170,13 @@ function App() {
 
     const invoiceText = `Invoice #${invoiceNumber}`;
     doc.setFontSize(10);
-    const issueDateText = "Issue Date"; //maybe cut??
     const dateText = formattedDate;
 
     const invoiceY = 30;  // invoice# position
-    const issueDateY = invoiceY + textPadding;  // issue date below
-    const formattedDateY = issueDateY + textPadding; // formatted date below 'issue date'
+    const formattedDateY = invoiceY + textPadding; // formatted date below 'issue date'
 
     // right-align text
     doc.text(invoiceText, rightMargin - doc.getTextWidth(invoiceText), invoiceY);
-    doc.text(issueDateText, rightMargin - doc.getTextWidth(issueDateText), issueDateY);
     doc.setFont("helvetica", "normal");
     doc.text(dateText, rightMargin - doc.getTextWidth(dateText), formattedDateY);
 
@@ -185,7 +219,27 @@ function App() {
     const wrappedDetails = doc.splitTextToSize(detailsText, detailsMaxWidth);
     doc.text(wrappedDetails, detailsX, detailsY);
 
-    doc.text(`Payment due: $${truckData.sellingPrice?.toLocaleString()}`, 142, y + 6);
+    // add clickable link
+    if (wrappedDetails.length > 0) {
+      const titleX = detailsX;
+      const titleY = detailsY;
+      const firstLineWidth = doc.getTextWidth(wrappedDetails[0]);
+      const listingUrl = url;
+
+      doc.link(titleX, titleY - 3, firstLineWidth, 6, {
+        url: listingUrl,
+      });
+    }
+
+    doc.text(
+      `Payment due: ${truckData.sellingPrice?.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+      })}`,
+      142,
+      y + 6
+    );
 
     const detailsHeight = wrappedDetails.length * 6;
     y += Math.max(38, detailsHeight);
@@ -209,10 +263,39 @@ function App() {
     // table data
     y += headerPadding + rowSpacing;
     doc.setFont("helvetica", "normal");
-    doc.text(truckData.listingTitle, 10, y);
+
+    // make it a clickable link to the listing
+    const titleText = truckData.listingTitle;
+    const titleX = 10;
+    const titleY = y;
+    doc.text(titleText, titleX, titleY);
+    const listingUrl = url;
+    const textWidth = doc.getTextWidth(titleText);
+
+    doc.link(titleX, titleY - 3, textWidth, 6, { url: listingUrl });
+
+
     doc.text("1", 125, y);
-    doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 150, y);
-    doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 180, y);
+    doc.text(
+      truckData.sellingPrice?.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+      }),
+      150,
+      y
+    );
+
+    doc.text(
+      truckData.sellingPrice?.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+      }),
+      180,
+      y
+    );
+
 
     // section separator
     y += 8;
@@ -223,7 +306,15 @@ function App() {
     doc.setFont("helvetica", "bold");
     doc.text("Subtotal:", 150, y);
     doc.setFont("helvetica", "normal");
-    doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 180, y);
+    doc.text(
+      truckData.sellingPrice?.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+      }),
+      180,
+      y
+    );
 
     y += 8;
     doc.setFont("helvetica", "bold");
@@ -234,78 +325,73 @@ function App() {
     y += 8;
     doc.setFont("helvetica", "bold");
     doc.text("Total Due:", 150, y);
-    doc.text(`$${truckData.sellingPrice?.toLocaleString()}`, 180, y);
+    doc.text(
+      truckData.sellingPrice?.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+      }),
+      180,
+      y
+    );
 
-    // bottom of the page - image and more details
-    y = 225;
 
-    // left side - Truck image
+    // --- Add a new page for image + more details ---
+    doc.addPage();
+
+    const imgX = 10;
+    const imgY = 30;
+    const imgWidth = 85;
+    const imgHeight = 65;
+    const columnWidth = 85;
+    const baseLineHeight = 5;
+    const lineHeight = baseLineHeight * 1.2;
+
+    const column1X = 10;
+    const column2X = 110;
+
+    let wrappedDescription = [];
+
     if (truckData.imageUrls?.length > 0) {
       try {
         const base64Image = await getBase64Image(truckData.imageUrls[0]);
-
-        const imgX = 10;
-        const imgY = 225;
-        const imgWidth = 85;
-        const imgHeight = 65;
-
         doc.addImage(base64Image, "JPEG", imgX, imgY, imgWidth, imgHeight);
-
       } catch (error) {
         console.error("Error loading truck image:", error);
       }
     }
 
-    // right side - two columns of text
-    const column1X = 110;
-    const column2X = 155;
-    y = 230;
-    doc.setFont("helvetica", "bold");
-    doc.text("More Details:", column1X, y);
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
 
-    y += 6;
-    const description = truckData.listingDescription || "No additional details available";
+    const rawDescription = truckData.listingDescription || "No additional details available";
+    const description = rawDescription.replace(/\n{2,}/g, '\n');
+    wrappedDescription = doc.splitTextToSize(description, columnWidth);
 
-    const lines = description.split("\n");
+    // space for left column
+    const column1StartY = imgY + imgHeight + 10; // below image
+    const moreDetailsHeadingHeight = 6;
+    const availableHeight = 297 - column1StartY - 10;
+    const maxLinesLeft = Math.floor((availableHeight - moreDetailsHeadingHeight) / lineHeight);
 
-    const columnWidth = 40;
+    const column1Lines = wrappedDescription.slice(0, maxLinesLeft);
+    const column2Lines = wrappedDescription.slice(maxLinesLeft);
 
-    let firstColumnText = [];
-    let secondColumnText = [];
-    let overflowText = [];
-    let lineCount = 0;
-    const maxLinesFirstColumn = 12; // max # of lines before switching to column 2
-    const maxLinesTotal = 24;
+    // left column — starts below image with “More Details”
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("More Details", column1X, column1StartY);
 
-    // process each line, add bullet points, wrap text
-    lines.forEach((line) => {
-      const wrappedLines = doc.splitTextToSize(`• ${line}`, columnWidth);
-      wrappedLines.forEach((wrappedLine) => {
-        if (lineCount < maxLinesFirstColumn) {
-          firstColumnText.push(wrappedLine);
-        } else if (lineCount < maxLinesTotal) {
-          secondColumnText.push(wrappedLine);
-        } else if (lineCount === maxLinesTotal) {
-          secondColumnText.push("Continued on the next page...");
-        } else {
-          overflowText.push(wrappedLine); // Move extra text to new page
-        }
-        lineCount++;
-      });
-    });
-
-    // print columns
-    doc.text(firstColumnText, column1X, y);
-    doc.text(secondColumnText, column2X, y);
-
-    // if text > 24 lines, overflow on next page
-    if (overflowText.length > 0) {
-      doc.addPage();
-      y = 30; // Reset position on new page
-
-      doc.setFont("helvetica", "normal");
-      doc.text(overflowText, column1X, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    for (let i = 0; i < column1Lines.length; i++) {
+      const lineY = column1StartY + moreDetailsHeadingHeight + i * lineHeight;
+      doc.text(column1Lines[i], column1X, lineY);
+    }
+    // right column — aligned with image height
+    const column2StartY = imgY;
+    for (let i = 0; i < column2Lines.length; i++) {
+      doc.text(column2Lines[i], column2X, column2StartY + i * lineHeight);
     }
 
     // Save the PDF
@@ -316,6 +402,36 @@ function App() {
       setLoading(false);
       setPdfGenerated(true);
     }, 1500);
+  };
+
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const validateFields = () => {
+    setNameError("");
+    setEmailError("");
+
+    if (!name.trim()) {
+      setNameError("Name is required.");
+      nameRef.current.focus();
+      return false;
+    }
+
+    if (!email.trim()) {
+      setEmailError("Email is required.");
+      emailRef.current.focus();
+      return false;
+    }
+
+    if (!isValidEmail(email)) {
+      setEmailError("Please enter a valid email address.");
+      emailRef.current.focus();
+      return false;
+    }
+
+    return true;
   };
 
   const downloadPDF = () => {
@@ -388,26 +504,53 @@ function App() {
             type="text"
             placeholder="Enter Fire Truck Listing URL"
             value={url}
+            ref={urlInputRef}
             onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (getDetailsButtonRef.current) {
+                  getDetailsButtonRef.current.focus();
+                }
+              }
+            }}
             className="garage-input"
           />
 
-          <button type="submit" className="orange-button">
+          <button
+            type="submit"
+            className="orange-button"
+            ref={getDetailsButtonRef}
+          >
             Get Truck Details
           </button>
-        </form>
 
+        </form>
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         {truckData && (
           <div className="truck-details-container">
-            <h2 className="truck-title">{truckData.listingTitle || "No title available"}</h2><br></br>
+            <h2 className="truck-title">
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: "none", color: "#007bff" }}
+              >
+                {truckData.listingTitle || "No title available"}
+              </a>
+            </h2>
             <div className="truck-main-info">
               <div className="truck-info-left">
                 <p><strong>Year:</strong> {truckData.itemAge || "N/A"}</p>
                 <p><strong>Location:</strong> {truckData.addressState || "N/A"}</p>
-                <p><strong>Price:</strong> ${truckData.sellingPrice || "N/A"}</p>
+                <p><strong>Price:</strong> {truckData.sellingPrice?.toLocaleString("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  minimumFractionDigits: 2,
+                }) || "N/A"}</p>
+
                 <p><strong>Mileage:</strong> {truckData.mileage ? `${truckData.mileage} miles` : "N/A"}</p>
                 <p><strong>Tank Size:</strong> {truckData.tankSize ? `${truckData.tankSize} gallons` : "N/A"}</p>
                 <p><strong>Pump Size:</strong> {truckData.pumpSize ? `${truckData.pumpSize} GPM` : "N/A"}</p>
@@ -447,7 +590,8 @@ function App() {
               <button
                 onClick={() => setShowForm(false)}
                 className="modal-close-button"
-                aria-label="Close modal"
+                aria-label="Close modal (Esc)"
+                title="Close modal (Esc)"
               >
                 ×
               </button>
@@ -455,29 +599,71 @@ function App() {
               <h2 className="modal-heading">Get PDF Invoice</h2>
               <p className="modal-subtext">Fill out the information below to receive a personalized PDF invoice.</p>
 
-              <label className="modal-label">Name (First and Last):</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="modal-input"
-              />
-
-              <label className="modal-label">Email:</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="modal-input"
-              />
+              <div className="input-group">
+                <label className="modal-label">Name (First and Last):</label>
+                <input
+                  type="text"
+                  placeholder="New Rochelle Fire Department"
+                  ref={nameRef}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setNameError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      emailRef.current?.focus(); // move to email field
+                    }
+                  }}
+                  className="modal-input"
+                />
+                {nameError && <p className="input-error-message">{nameError}</p>}
+              </div>
+              <div className="input-group">
+                <label className="modal-label">Email:</label>
+                <input
+                  type="email"
+                  placeholder="johnsmith@gmail.com"
+                  ref={emailRef}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const isValid = validateFields();
+                      if (isValid && generateButtonRef.current) {
+                        generateButtonRef.current.focus();
+                      }
+                    }
+                  }}
+                  className="modal-input"
+                />
+                {emailError && <p className="input-error-message">{emailError}</p>}
+              </div>
 
               <div className="modal-footer">
                 {!pdfGenerated && (
                   <>
-                    <button onClick={generatePDF} className="orange-button full-width-button">
+                    <button
+                      onClick={generatePDF}
+                      ref={generateButtonRef}
+                      className="orange-button full-width-button"
+                    >
                       Generate Invoice
                     </button>
-                    {loading && <p className="modal-loading">Loading...</p>}
+                    {loading && (
+                      <>
+                        <div className="firetruck-loader-container">
+                          <div className="firetruck-loader">🚒</div>
+                        </div>
+                        <p className="modal-loading">Your PDF invoice is being generated...</p>
+                      </>
+                    )}
+
                   </>
                 )}
 
