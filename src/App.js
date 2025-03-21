@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import emailjs from "emailjs-com";
+import './index.css';
 
 function App() {
   const [url, setUrl] = useState(""); // stores the input URL
@@ -75,7 +76,7 @@ function App() {
         canvas.height = img.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
-        const base64 = canvas.toDataURL("image/png");
+        const base64 = canvas.toDataURL("image/jpeg");
         resolve(base64);
       };
       img.onerror = (err) => reject(err);
@@ -98,10 +99,10 @@ function App() {
       day: "numeric",
     });
 
-    const logoUrl = "/logo-2.png";
+    const logoUrl = "/logo-2.jpeg";
     try {
       const base64Logo = await getBase64Image(logoUrl);
-      doc.addImage(base64Logo, "png", 10, 18, 30, 30);
+      doc.addImage(base64Logo, "jpeg", 10, 18, 30, 30);
       doc.link(10, 18, 30, 30, { url: "https://www.withgarage.com/" });
     } catch (error) {
       console.error("Error loading logo:", error);
@@ -183,9 +184,9 @@ function App() {
     const detailsText = `Truck Model: ${truckData.listingTitle}`;
     const wrappedDetails = doc.splitTextToSize(detailsText, detailsMaxWidth);
     doc.text(wrappedDetails, detailsX, detailsY);
-    
+
     doc.text(`Payment due: $${truckData.sellingPrice?.toLocaleString()}`, 142, y + 6);
-    
+
     const detailsHeight = wrappedDetails.length * 6;
     y += Math.max(38, detailsHeight);
 
@@ -195,7 +196,7 @@ function App() {
     doc.line(10, y, 200, y);
 
     // table headers
-    const headerPadding = 8; 
+    const headerPadding = 8;
     const rowSpacing = 12;
 
     doc.text("ITEM", 10, y + headerPadding);
@@ -243,8 +244,8 @@ function App() {
       try {
         const base64Image = await getBase64Image(truckData.imageUrls[0]);
 
-        const imgX = 10;  
-        const imgY = 225; 
+        const imgX = 10;
+        const imgY = 225;
         const imgWidth = 85;
         const imgHeight = 65;
 
@@ -286,7 +287,7 @@ function App() {
         } else if (lineCount < maxLinesTotal) {
           secondColumnText.push(wrappedLine);
         } else if (lineCount === maxLinesTotal) {
-          secondColumnText.push("Continued on the next page..."); 
+          secondColumnText.push("Continued on the next page...");
         } else {
           overflowText.push(wrappedLine); // Move extra text to new page
         }
@@ -315,6 +316,15 @@ function App() {
       setLoading(false);
       setPdfGenerated(true);
     }, 1500);
+  };
+
+  const downloadPDF = () => {
+    const link = document.createElement("a");
+    link.href = `data:application/pdf;base64,${pdfBase64}`;
+    link.download = "fire_truck_invoice.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const sendEmail = async () => {
@@ -351,118 +361,144 @@ function App() {
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h1>Fire Truck Invoice Generator</h1>
+    <div className="garage-main-container">
+      <div style={{ textAlign: "center", padding: "20px" }}>
+        <header className="garage-header">
+          <div className="garage-header-content">
+            <img
+              src="/logo-2.jpeg"
+              alt="Garage Logo"
+              className="garage-logo"
+            />
+            <h1 className="garage-title">Garage Invoice Generator</h1>
+          </div>
+          <p className="garage-subtitle">
+            Create and email invoices for Garage fire truck listings
+          </p>
+        </header>
 
-      <input
-        type="text"
-        placeholder="Enter Fire Truck Listing URL"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        style={{ padding: "10px", width: "60%" }}
-      />
-
-      <button
-        onClick={handleExtractUUID}
-        style={{ marginLeft: "10px", padding: "10px", cursor: "pointer" }}
-      >
-        Get Truck Details
-      </button>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {truckData && (
-        <div>
-          <h2>{truckData.listingTitle || "No title available"}</h2>
-          <p><strong>Year:</strong> {truckData.itemAge || "N/A"}</p>
-          <p><strong>Location:</strong> {truckData.addressState || "N/A"}</p>
-          <p><strong>Price:</strong> ${truckData.sellingPrice || "N/A"}</p>
-          <p><strong>Mileage:</strong> {truckData.mileage ? `${truckData.mileage} miles` : "N/A"}</p>
-          <p><strong>Tank Size:</strong> {truckData.tankSize ? `${truckData.tankSize} gallons` : "N/A"}</p>
-          <p><strong>Pump Size:</strong> {truckData.pumpSize ? `${truckData.pumpSize} GPM` : "N/A"}</p>
-          <p><strong>Description:</strong></p>
-          <p>{truckData.listingDescription || "No description available"}</p>
-
-          {truckData.imageUrls?.length > 0 ? (
-            <div>
-              <h3>Image:</h3>
-              <img
-                src={truckData.imageUrls[0]}
-                alt="Truck"
-                style={{ width: "100%", maxWidth: "400px", marginTop: "10px" }}
-              />
-            </div>
-          ) : (
-            <p>No images available</p>
-          )}
-          <button
-            onClick={() => setShowForm(true)}
-            style={{ marginTop: "20px", padding: "10px", cursor: "pointer" }}
-          >
-            Generate PDF Invoice
-          </button>
-        </div>
-      )}
-
-      {showForm && (
-        <div style={{ maxWidth: "400px", margin: "auto", textAlign: "left" }}>
-          <h2>Get PDF Invoice</h2>
-          <p>Fill out the information below to receive a personalized PDF invoice.</p>
-
-          <label>Name (First and Last):</label>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleExtractUUID();
+          }}
+          className="garage-form"
+        >
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ width: "100%", padding: "8px", margin: "8px 0" }}
+            placeholder="Enter Fire Truck Listing URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="garage-input"
           />
 
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", padding: "8px", margin: "8px 0" }}
-          />
-
-          <button
-            onClick={generatePDF}
-            style={{ padding: "12px", fontSize: "16px", cursor: "pointer", marginTop: "10px" }}
-          >
-            Generate Invoice
+          <button type="submit" className="orange-button">
+            Get Truck Details
           </button>
+        </form>
 
-          {loading && <p>Loading...</p>}
 
-          {pdfGenerated && (
-            <div style={{ marginTop: "20px" }}>
-              <p>Your PDF invoice has been successfully generated!</p>
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-              <button
-                onClick={() => {
-                  const link = document.createElement("a");
-                  link.href = `data:application/pdf;base64,${pdfBase64}`;
-                  link.download = "fire_truck_invoice.pdf";
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-                style={{ padding: "10px", marginRight: "10px" }}
-              >
-                Download PDF
-              </button>
+        {truckData && (
+          <div className="truck-details-container">
+            <h2 className="truck-title">{truckData.listingTitle || "No title available"}</h2><br></br>
+            <div className="truck-main-info">
+              <div className="truck-info-left">
+                <p><strong>Year:</strong> {truckData.itemAge || "N/A"}</p>
+                <p><strong>Location:</strong> {truckData.addressState || "N/A"}</p>
+                <p><strong>Price:</strong> ${truckData.sellingPrice || "N/A"}</p>
+                <p><strong>Mileage:</strong> {truckData.mileage ? `${truckData.mileage} miles` : "N/A"}</p>
+                <p><strong>Tank Size:</strong> {truckData.tankSize ? `${truckData.tankSize} gallons` : "N/A"}</p>
+                <p><strong>Pump Size:</strong> {truckData.pumpSize ? `${truckData.pumpSize} GPM` : "N/A"}</p>
+              </div>
 
-              <button
-                onClick={sendEmail}
-                style={{ padding: "10px", backgroundColor: "#007bff", color: "#fff", border: "none", cursor: "pointer" }}
-              >
-                Email Me
-              </button>
+              {truckData.imageUrls?.length > 0 ? (
+                <div className="truck-image-right">
+                  <img
+                    src={truckData.imageUrls[0]}
+                    alt="Truck"
+                    className="truck-image"
+                  />
+                </div>
+              ) : (
+                <p>No image available</p>
+              )}
             </div>
-          )}
 
-        </div>
-      )}
+            <div className="truck-description">
+              <p><strong>Description:</strong></p>
+              <p>{truckData.listingDescription || "No description available"}</p>
+            </div>
+            <br></br>
+
+            <button
+              onClick={() => setShowForm(true)}
+              className="orange-button"
+            >
+              Generate PDF Invoice
+            </button>
+          </div>
+        )}
+
+        {showForm && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <button
+                onClick={() => setShowForm(false)}
+                className="modal-close-button"
+                aria-label="Close modal"
+              >
+                ×
+              </button>
+
+              <h2 className="modal-heading">Get PDF Invoice</h2>
+              <p className="modal-subtext">Fill out the information below to receive a personalized PDF invoice.</p>
+
+              <label className="modal-label">Name (First and Last):</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="modal-input"
+              />
+
+              <label className="modal-label">Email:</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="modal-input"
+              />
+
+              <div className="modal-footer">
+                {!pdfGenerated && (
+                  <>
+                    <button onClick={generatePDF} className="orange-button full-width-button">
+                      Generate Invoice
+                    </button>
+                    {loading && <p className="modal-loading">Loading...</p>}
+                  </>
+                )}
+
+                {pdfGenerated && (
+                  <div className="modal-success">
+                    <p>Your PDF invoice has been successfully generated!</p>
+
+                    <button onClick={downloadPDF} className="orange-button">
+                      Download PDF
+                    </button>
+
+                    <button onClick={sendEmail} className="white-outline-button">
+                      Email Me
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

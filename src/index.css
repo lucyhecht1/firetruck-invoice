@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +14,262 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.garage-main-container {
+  max-width: 800px;
+  margin: 50px auto;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.garage-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 16px;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.garage-header-content img h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.garage-logo {
+  height: 100px;
+  width: auto;
+  object-fit: contain;
+}
+
+.garage-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+  /* Tailwind's gray-800 */
+}
+
+.garage-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  /* Tailwind's gray-500 */
+  margin-top: 4px;
+}
+
+.garage-input {
+  padding: 10px;
+  width: 60%;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.08);
+  transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+.garage-input:focus {
+  border-color: #f57c00;
+  /* Garage orange */
+  outline: none;
+  box-shadow: 0 0 5px rgba(245, 124, 0, 0.5);
+}
+
+.orange-button {
+  background-color: #f97316;
+  color: white;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.orange-button:hover {
+  background-color: #ea580c;
+}
+
+.truck-details-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 30px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.truck-main-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.truck-info-left {
+  flex: 1;
+  min-width: 250px;
+  text-align: left;
+}
+
+.truck-image-right {
+  flex: 1;
+  min-width: 250px;
+  text-align: right;
+}
+
+.truck-image {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.truck-description {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.modal-close-button:hover {
+  color: #333;
+}
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Modal box */
+.modal-content {
+  background: #fff;
+  padding: 40px;
+  width: 400px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.modal-content label {
+  text-align: left;
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Modal text styles */
+.modal-heading {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modal-subtext {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.modal-label {
+  font-weight: 500;
+  font-size: 14px;
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+/* Inputs */
+.modal-input {
+  width: 90%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #ff6600;
+  box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2);
+}
+
+.full-width-button {
+  width: 100%;
+  margin-top: 25px;
+}
+.white-outline-button {
+  background-color: white;
+  color: #f97316;
+  padding: 9px 20px;
+  margin-left: 10px;
+  border: 2px solid #f97316;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.white-outline-button:hover {
+  background-color: #f97316;
+  color: white;
+}
+
+.modal-success {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.modal-success p {
+  color: #2ca132; /* green */
+  margin-bottom: 16px;
+}
+
+/* Loading */
+.modal-loading {
+  margin-top: 10px;
+  color: #555;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
