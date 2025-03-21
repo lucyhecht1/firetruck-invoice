@@ -476,7 +476,7 @@ function App() {
       if (response.status === 200) {
         setShowForm(false);
         setBanner({
-          message: "Your email has been sent!",
+          message: `Your email has been sent to ${email}.`,
           isError: false,
         });
         setTimeout(() => setBanner(null), 5000);
@@ -513,11 +513,18 @@ function App() {
       <div style={{ textAlign: "center", padding: "20px" }}>
         <header className="garage-header">
           <div className="garage-header-content">
-            <img
-              src="/logo-2.jpeg"
-              alt="Garage Logo"
-              className="garage-logo"
-            />
+            <a
+              href="https://www.withgarage.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/logo-2.jpeg"
+                alt="Garage Logo"
+                className="garage-logo"
+                style={{ cursor: "pointer" }}
+              />
+            </a>
             <h1 className="garage-title">Garage Invoice Generator</h1>
           </div>
           <p className="garage-subtitle">
@@ -564,32 +571,11 @@ function App() {
         {truckData && (
           <div className="truck-details-container">
             <h2 className="truck-title">
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: "none", color: "#007bff" }}
-              >
-                {truckData.listingTitle || "No title available"}
-              </a>
+              {truckData.listingTitle || "No title available"}
             </h2>
             <div className="truck-main-info">
-              <div className="truck-info-left">
-                <p><strong>Year:</strong> {truckData.itemAge || "N/A"}</p>
-                <p><strong>Location:</strong> {truckData.addressState || "N/A"}</p>
-                <p><strong>Price:</strong> {truckData.sellingPrice?.toLocaleString("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                  minimumFractionDigits: 2,
-                }) || "N/A"}</p>
-
-                <p><strong>Mileage:</strong> {truckData.mileage ? `${truckData.mileage} miles` : "N/A"}</p>
-                <p><strong>Tank Size:</strong> {truckData.tankSize ? `${truckData.tankSize} gallons` : "N/A"}</p>
-                <p><strong>Pump Size:</strong> {truckData.pumpSize ? `${truckData.pumpSize} GPM` : "N/A"}</p>
-              </div>
-
               {truckData.imageUrls?.length > 0 ? (
-                <div className="truck-image-right">
+                <div className="truck-image-center">
                   <img
                     src={truckData.imageUrls[0]}
                     alt="Truck"
@@ -597,21 +583,35 @@ function App() {
                   />
                 </div>
               ) : (
-                <p>No image available</p>
+                <p style={{ textAlign: "center" }}>No image available</p>
               )}
-            </div>
 
-            <div className="truck-description">
-              <p><strong>Description:</strong></p>
-              <p className="description-text">
-                {truckData.listingDescription
-                  ? truckData.listingDescription.slice(0, 100) + "..."  // Limit to first 6 lines/characters
-                  : "No description available"
-                }
-              </p>
-              {truckData.listingDescription && truckData.listingDescription.length > 300 && (
-                <p><em>See more details when you process an invoice.</em></p>
-              )}
+              <div className="truck-details-row">
+                <div className="truck-info-left">
+                  <p><strong>Year:</strong> {truckData.itemAge || "N/A"}</p>
+                  <p><strong>Location:</strong> {truckData.addressState || "N/A"}</p>
+                  <p><strong>Price:</strong> {truckData.sellingPrice?.toLocaleString("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                    minimumFractionDigits: 2,
+                  }) || "N/A"}</p>
+
+                  <p><strong>Mileage:</strong> {truckData.mileage ? `${truckData.mileage} miles` : "N/A"}</p>
+                  <p><strong>Tank Size:</strong> {truckData.tankSize ? `${truckData.tankSize} gallons` : "N/A"}</p>
+                  <p><strong>Pump Size:</strong> {truckData.pumpSize ? `${truckData.pumpSize} GPM` : "N/A"}</p>
+                </div>
+
+                <div className="truck-description">
+                  <p><strong>Description:</strong></p>
+                  <p className="description-text">
+                    {truckData.listingDescription
+                      ? truckData.listingDescription.slice(0, 100) + "..."
+                      : "No description available"
+                    }
+                  </p>
+                  <p><em>See more details when you generate an invoice.</em></p>
+                </div>
+              </div>
             </div>
 
             <br></br>
