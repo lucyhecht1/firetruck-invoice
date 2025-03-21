@@ -1,7 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -90,7 +86,6 @@ code {
 
 .garage-input:focus {
   border-color: #f57c00;
-  /* Garage orange */
   outline: none;
   box-shadow: 0 0 5px rgba(245, 124, 0, 0.5);
 }
@@ -147,7 +142,8 @@ code {
   min-width: 280px;
   text-align: right;
 }
-.truck-description{
+
+.truck-description {
   flex: 1;
   min-width: 280px;
   text-align: left;
@@ -180,7 +176,6 @@ code {
   color: #333;
 }
 
-/* Modal overlay */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -192,9 +187,24 @@ code {
   justify-content: center;
   align-items: center;
   z-index: 999;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
 }
 
-/* Modal box */
+.modal-overlay.show {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.modal-overlay.closing {
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
 .modal-content {
   background: #fff;
   padding: 40px;
@@ -204,6 +214,15 @@ code {
   display: flex;
   flex-direction: column;
   position: relative;
+
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .modal-content label {
@@ -218,7 +237,6 @@ code {
   border-radius: 4px;
 }
 
-/* Modal text styles */
 .modal-heading {
   font-size: 24px;
   font-weight: bold;
@@ -241,7 +259,6 @@ code {
   color: #333;
 }
 
-/* Inputs */
 .modal-input {
   width: 90%;
   padding: 10px 12px;
@@ -256,6 +273,49 @@ code {
   border-color: #ff6600;
   box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2);
 }
+
+.modal-footer .visible-button {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: auto;
+}
+
+.modal-footer .hidden-button {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.transition-wrapper {
+  position: relative;
+  min-height: 100px;
+  /* prevents jumping */
+}
+
+.transition-button-wrapper {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.fade-out {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  z-index: 0;
+}
+
 
 .full-width-button {
   width: 100%;
@@ -289,7 +349,6 @@ code {
   margin-bottom: 16px;
 }
 
-/* Loading */
 .modal-loading {
   margin-top: 10px;
   color: #555;
@@ -308,19 +367,18 @@ code {
   margin-left: 4px;
 }
 
-/* using firetruck instead loool */
+/* 
+using firetruck instead loool
 .spinner {
   border: 4px solid #f3f3f3;
-  /* Light gray background */
   border-top: 4px solid #FFA500;
-  /* Orange top */
   border-radius: 50%;
   width: 24px;
   height: 24px;
   animation: spin 1s linear infinite;
   margin: 12px auto 0 auto;
-  /* centers it below the button */
 }
+*/
 
 .firetruck-loader-container {
   position: relative;
@@ -334,7 +392,7 @@ code {
   font-size: 2rem;
   position: absolute;
   right: -3rem;
-  animation: drive-rtl 4s linear infinite;
+  animation: drive-rtl 4s linear infinite alternate;
 }
 
 @keyframes fadeIn {
