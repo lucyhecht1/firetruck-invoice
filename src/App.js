@@ -83,14 +83,9 @@ function App() {
       const blob = new Blob([byteArray], { type: "application/pdf" });
       const blobUrl = URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = "garage_invoice.pdf";
-      link.target = "_blank"; // open in new tab for mobile safety
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      window.open(blobUrl, "_blank");
+
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     } catch (err) {
       console.error("Failed to download PDF:", err);
       setBanner({
