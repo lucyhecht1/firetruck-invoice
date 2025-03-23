@@ -200,5 +200,8 @@ export async function generatePDF({ truckData, name, email, url }) {
         doc.text(column2Lines[i], column2X, column2StartY + i * lineHeight);
     }
 
-    return doc.output("datauristring").split(",")[1];
+    const base64PDF = doc.output("datauristring").split(",")[1];
+    const estimatedBytes = Math.ceil((base64PDF.length * 3) / 4);
+
+    return { base64PDF, estimatedBytes, doc };
 }

@@ -28,7 +28,7 @@ code {
 }
 
 .email-banner.error {
-  background-color: red;
+  background-color: rgb(192, 22, 22);
 }
 
 .garage-main-container {

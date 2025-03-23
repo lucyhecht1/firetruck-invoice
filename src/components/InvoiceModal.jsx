@@ -61,8 +61,13 @@ export default function InvoiceModal({
     if (!isValid) return;
 
     setLoading(true);
-    const pdf = await generatePDFUtil({ truckData, name, email, url });
-    setPdfBase64(pdf);
+    const { base64PDF, estimatedBytes, doc } = await generatePDFUtil({ truckData, name, email, url });
+    setPdfBase64(base64PDF);
+
+    // save a reference to the doc in case of large PDF fallback
+    InvoiceModal.generatedDoc = doc;
+    InvoiceModal.estimatedBytes = estimatedBytes;
+
 
     // slight delay to let firetruck appear before fading in buttons
     setTimeout(() => {
@@ -73,15 +78,36 @@ export default function InvoiceModal({
 
   const handleSendEmail = async () => {
     if (!pdfBase64) {
-      alert("Please generate the invoice first.");
+      setBanner({
+        message: "Please generate the invoice first.",
+        isError: true,
+      });
+      setTimeout(() => setBanner(null), 5000);
       return;
     }
+
+    // Fallback for PDFs larger than 2MB (EmailJS limit)
+    if (InvoiceModal.estimatedBytes > 2_000_000) {
+      setBanner({
+        message: "The PDF is too large to email. Please download the invoice instead.",
+        isError: true,
+      });
+      setTimeout(() => setBanner(null), 5000);
+      return;
+    }
+
     setLoading(true);
 
-    await sendEmailUtil({ name, email, truckData, pdfBase64, setShowForm, setBanner });
-    setLoading(false);
+    await sendEmailUtil({
+      name,
+      email,
+      truckData,
+      pdfBase64,
+      setShowForm,
+      setBanner,
+    });
 
-    // graceful close
+    setLoading(false);
     setIsClosing(true);
     setTimeout(() => {
       setShowForm(false);
