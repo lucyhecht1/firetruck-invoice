@@ -1,20 +1,20 @@
 {
   "files": {
-    "main.css": "/firetruck-invoice/static/css/main.0544d83a.css",
-    "main.js": "/firetruck-invoice/static/js/main.fa55c60e.js",
+    "main.css": "/firetruck-invoice/static/css/main.f3166806.css",
+    "main.js": "/firetruck-invoice/static/js/main.9407268f.js",
     "static/js/239.bada7740.chunk.js": "/firetruck-invoice/static/js/239.bada7740.chunk.js",
     "static/js/977.b90d1aed.chunk.js": "/firetruck-invoice/static/js/977.b90d1aed.chunk.js",
     "static/js/732.47864aac.chunk.js": "/firetruck-invoice/static/js/732.47864aac.chunk.js",
     "static/js/453.ae0a1dc4.chunk.js": "/firetruck-invoice/static/js/453.ae0a1dc4.chunk.js",
     "index.html": "/firetruck-invoice/index.html",
-    "main.0544d83a.css.map": "/firetruck-invoice/static/css/main.0544d83a.css.map",
-    "main.fa55c60e.js.map": "/firetruck-invoice/static/js/main.fa55c60e.js.map",
+    "main.f3166806.css.map": "/firetruck-invoice/static/css/main.f3166806.css.map",
+    "main.9407268f.js.map": "/firetruck-invoice/static/js/main.9407268f.js.map",
     "239.bada7740.chunk.js.map": "/firetruck-invoice/static/js/239.bada7740.chunk.js.map",
     "732.47864aac.chunk.js.map": "/firetruck-invoice/static/js/732.47864aac.chunk.js.map",
     "453.ae0a1dc4.chunk.js.map": "/firetruck-invoice/static/js/453.ae0a1dc4.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.0544d83a.css",
-    "static/js/main.fa55c60e.js"
+    "static/css/main.f3166806.css",
+    "static/js/main.9407268f.js"
   ]
 }
