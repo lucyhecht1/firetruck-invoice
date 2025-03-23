@@ -39,11 +39,14 @@ export default function TruckDetails({ truckData, setShowForm }) {
             <p><strong>Description:</strong></p>
             <p className="description-text">
               {truckData.listingDescription
-                ? truckData.listingDescription.slice(0, 100) + "..."
-                : "No description available"
-              }
+                ? truckData.listingDescription.length > 100
+                  ? truckData.listingDescription.slice(0, 100) + "..."
+                  : truckData.listingDescription
+                : "No description available"}
             </p>
-            <p><em>See more details when you generate an invoice.</em></p>
+            {truckData.listingDescription && truckData.listingDescription.length > 100 && (
+              <p><em>See more details when you generate an invoice.</em></p>
+            )}
           </div>
         </div>
       </div>
