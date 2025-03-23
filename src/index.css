@@ -107,12 +107,13 @@ code {
 }
 
 .truck-details-container {
-  border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 20px 40px;
-  margin-top: 30px;
+  padding: 20px 24px;
+  margin: 30px auto;
+  max-width: 900px;
+  width: 100%;
   background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
 }
 
 .truck-main-info {
@@ -428,9 +429,9 @@ using firetruck instead loool
 }
   */
 
-  /*responsive layout for smaller screens*/
-  
-  /* truck details goes into one long column*/
+/*responsive layout for smaller screens*/
+
+/* truck details goes into one long column*/
 @media (max-width: 800px) {
   .truck-details-row {
     flex-direction: column;
@@ -441,6 +442,7 @@ using firetruck instead loool
     text-align: center;
   }
 }
+
 /*text field has longer width*/
 /*breathing room between button and text field*/
 @media (max-width: 600px) {
@@ -450,5 +452,9 @@ using firetruck instead loool
 
   .orange-button {
     margin-top: 12px;
+  }
+
+  .truck-details-container {
+    padding: 16px 16px;
   }
 }
