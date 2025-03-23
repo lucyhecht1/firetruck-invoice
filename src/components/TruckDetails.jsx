@@ -4,7 +4,7 @@ export default function TruckDetails({ truckData, setShowForm }) {
   return (
     <div className="truck-details-container">
       <h2 className="truck-title">
-        {truckData.listingTitle || "No title available"}
+        {truckData.listingTitle || "No title available."}
       </h2>
 
       <div className="truck-main-info">
@@ -17,7 +17,7 @@ export default function TruckDetails({ truckData, setShowForm }) {
             />
           </div>
         ) : (
-          <p style={{ textAlign: "center" }}>No image available</p>
+          <p style={{ textAlign: "center" }}>No image available.</p>
         )}
 
         <div className="truck-details-row">
@@ -42,7 +42,7 @@ export default function TruckDetails({ truckData, setShowForm }) {
                 ? truckData.listingDescription.length > 100
                   ? truckData.listingDescription.slice(0, 100) + "..."
                   : truckData.listingDescription
-                : "No description available"}
+                : "No description available."}
             </p>
             {truckData.listingDescription && truckData.listingDescription.length > 100 && (
               <p><em>See more details when you generate an invoice.</em></p>
