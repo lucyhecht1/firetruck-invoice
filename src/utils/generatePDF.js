@@ -171,8 +171,11 @@ export async function generatePDF({ truckData, name, email, url }) {
             console.error("Error loading truck image:", error);
         }
     }
-
-    const rawDescription = truckData.listingDescription || "No additional details available";
+    
+    function cleanText(text) {
+        return text.normalize("NFKD").replace(/[^\x00-\x7F]/g, ""); // strips weird or non-ASCII characters
+    }
+    const rawDescription = cleanText(truckData.listingDescription || "No additional details available.");
     const description = rawDescription.replace(/\n{2,}/g, "\n");
     const wrappedDescription = doc.splitTextToSize(description, columnWidth);
 

@@ -442,10 +442,16 @@ using firetruck instead loool
     text-align: center;
   }
 }
-
-/*text field has longer width*/
-/*breathing room between button and text field*/
+/* fixed margins on smaller screen */
+/* text field has longer width */
+/* breathing room between button and text field */
 @media (max-width: 600px) {
+  .garage-main-container {
+    margin: 20px 10px;
+    padding: 20px;
+    border-radius: 8px;
+  }
+
   .garage-input {
     width: 100%;
   }
@@ -455,6 +461,6 @@ using firetruck instead loool
   }
 
   .truck-details-container {
-    padding: 16px 16px;
+    padding: 16px;
   }
 }
