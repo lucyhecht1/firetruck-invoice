@@ -21,8 +21,8 @@ See how the service responds to empty or incorrectly formatted fields.
 
 ---
 
-## Demo 3: API and Internal Server Errors
-Demonstrates how the service handles unexpected API issues, including invalid UUIDs, 404s, and 500 server errors.
+## Demo 3: API Errors
+Demonstrates how the service handles unexpected API issues, including non-existing UUIDs, 404s, and 500 server errors.
 
 [![Watch the demo](https://img.youtube.com/vi/8c1GB9SKO4M/hqdefault.jpg)](https://www.youtube.com/watch?v=8c1GB9SKO4M)
 
