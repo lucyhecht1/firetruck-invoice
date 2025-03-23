@@ -34,21 +34,40 @@ Demonstrates how the service handles unexpected API issues, including non-existi
 - EmailJS – Sends the generated invoice via email
 - CSS – For custom styling and layout
 ---
-### Installation
+### Installation  
+*Note:* You can access the live version of the app [here](https://lucyhecht1.github.io/firetruck-invoice/)!
+
 To run the app on your local machine:
 
 Clone this repository:
-```
+```bash
 git clone https://github.com/your-username/firetruck-invoice.git
 ```
 Navigate to the project directory:
-```
+```bash
 cd firetruck-invoice
 ```
 Install dependencies:
-```
+```bash
 npm install
 ```
-**Start the app**
+**Set up EmailJS:**  
+This app uses [EmailJS](https://www.emailjs.com/) to send the invoice PDF to users without needing a backend. To configure it:
+
+1. [Create an EmailJS account](https://dashboard.emailjs.com/sign-up) if you don’t already have one.
+2. Set up an email service and template in the EmailJS dashboard.
+3. Create a `.env` file in the root of your project and add the following environment variables:
+
+```env
+REACT_APP_EMAILJS_SERVICE_ID=your_service_id
+REACT_APP_EMAILJS_TEMPLATE_ID=your_template_id
+REACT_APP_EMAILJS_USER_ID=your_public_key
 ```
+
+You’ll find these values in your EmailJS dashboard.  
+**Note:** Your `.env` file is already included in `.gitignore`.
+
+**Start the app**
+```bash
 npm start
+```
