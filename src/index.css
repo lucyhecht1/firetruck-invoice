@@ -129,7 +129,6 @@ code {
 
 .truck-details-row {
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
   gap: 24px;
   width: 100%;
@@ -428,3 +427,28 @@ using firetruck instead loool
   }
 }
   */
+
+  /*responsive layout for smaller screens*/
+  
+  /* truck details goes into one long column*/
+@media (max-width: 800px) {
+  .truck-details-row {
+    flex-direction: column;
+  }
+
+  .truck-info-left,
+  .truck-description {
+    text-align: center;
+  }
+}
+/*text field has longer width*/
+/*breathing room between button and text field*/
+@media (max-width: 600px) {
+  .garage-input {
+    width: 100%;
+  }
+
+  .orange-button {
+    margin-top: 12px;
+  }
+}
