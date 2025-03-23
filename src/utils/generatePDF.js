@@ -10,7 +10,7 @@ export async function generatePDF({ truckData, name, email, url }) {
         day: "numeric",
     });
 
-    const logoUrl = "/logo-2.jpeg";
+    const logoUrl = "logo-2.jpeg";
     try {
         const base64Logo = await getBase64JPEGImage(logoUrl);
         doc.addImage(base64Logo, "JPEG", 10, 18, 30, 30);
