@@ -17,14 +17,14 @@ A walkthrough of the complete flow: entering a valid truck listing, generating a
 ## Demo 2: Invalid Inputs
 See how the service responds to empty or incorrectly formatted fields.
 
-[![Watch the demo](https://img.youtube.com/vi/nkOQXCrr2gU/hqdefault.jpg)]([https://www.youtube.com/watch?v=RpF2NyW2OIw](https://youtu.be/nkOQXCrr2gU))
+[![Watch the demo](https://img.youtube.com/vi/nkOQXCrr2gU/hqdefault.jpg)](https://youtu.be/nkOQXCrr2gU)
 
 ---
 
 ## Demo 3: API and Internal Server Errors
 Demonstrates how the service handles unexpected API issues, including invalid UUIDs, 404s, and 500 server errors.
 
-[![Watch the demo](https://img.youtube.com/vi/8c1GB9SKO4M/hqdefault.jpg)]([https://www.youtube.com/watch?v=RpF2NyW2OIw](https://www.youtube.com/watch?v=8c1GB9SKO4M))
+[![Watch the demo](https://img.youtube.com/vi/8c1GB9SKO4M/hqdefault.jpg)](https://www.youtube.com/watch?v=8c1GB9SKO4M)
 
 ---
 ### Tech  Stack:
