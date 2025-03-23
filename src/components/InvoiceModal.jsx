@@ -67,6 +67,7 @@ export default function InvoiceModal({
     // save a reference to the doc in case of large PDF fallback
     InvoiceModal.generatedDoc = doc;
     InvoiceModal.estimatedBytes = estimatedBytes;
+    console.log("Estimated PDF size:", InvoiceModal.estimatedBytes);
 
 
     // slight delay to let firetruck appear before fading in buttons
@@ -87,7 +88,8 @@ export default function InvoiceModal({
     }
 
     // Fallback for PDFs larger than 2MB (EmailJS limit)
-    if (InvoiceModal.estimatedBytes > 2_000_000) {
+    const size = InvoiceModal.estimatedBytes || pdfBase64.length;
+    if (size > 2_000_000) {
       setBanner({
         message: "The PDF is too large to email. Please download the invoice instead.",
         isError: true,

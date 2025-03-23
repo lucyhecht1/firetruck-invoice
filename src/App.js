@@ -73,12 +73,32 @@ function App() {
   };
 
   const downloadPDF = () => {
-    const link = document.createElement("a");
-    link.href = `data:application/pdf;base64,${pdfBase64}`;
-    link.download = "garage_invoice.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "garage_invoice.pdf";
+      link.target = "_blank"; // open in new tab for mobile safety
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Failed to download PDF:", err);
+      setBanner({
+        message: "Unable to download PDF. Try a different browser or device.",
+        isError: true,
+      });
+      setTimeout(() => setBanner(null), 5000);
+    }
   };
 
   return (

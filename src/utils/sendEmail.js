@@ -16,7 +16,6 @@ export async function sendEmail({ name, email, truckData, pdfBase64, setShowForm
   console.log("PDF Base64 length:", pdfBase64?.length);
   console.log("Template Params:", templateParams);
 
-
   try {
     const response = await emailjs.send(
       process.env.REACT_APP_EMAILJS_SERVICE_ID,
@@ -32,7 +31,6 @@ export async function sendEmail({ name, email, truckData, pdfBase64, setShowForm
         isError: false,
       });
     } else {
-      setShowForm(false);
       setBanner({
         message: "An error occurred: Your email cannot be sent.",
         isError: true,
@@ -40,7 +38,6 @@ export async function sendEmail({ name, email, truckData, pdfBase64, setShowForm
     }
   } catch (error) {
     console.error("Error sending email:", error);
-    setShowForm(false);
     setBanner({
       message: "An error occurred while sending the email.",
       isError: true,

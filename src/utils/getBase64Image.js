@@ -9,7 +9,7 @@ export function getBase64JPEGImage(url) {
             canvas.height = img.height;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
-            const base64 = canvas.toDataURL("image/jpeg", .5); // 10% quality
+            const base64 = canvas.toDataURL("image/jpeg", .3); // 30% quality
             resolve(base64);
         };
         img.onerror = (err) => reject(err);
