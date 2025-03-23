@@ -87,7 +87,7 @@ export default function InvoiceModal({
       return;
     }
 
-    // Fallback for PDFs larger than 2MB (EmailJS limit)
+    // fallback for PDFs larger than 2MB (EmailJS limit)
     const size = InvoiceModal.estimatedBytes || pdfBase64.length;
     if (size > 2_000_000) {
       setBanner({

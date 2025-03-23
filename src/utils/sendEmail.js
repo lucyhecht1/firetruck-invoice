@@ -8,11 +8,8 @@ export async function sendEmail({ name, email, truckData, pdfBase64, setShowForm
     pdf_attachment: pdfBase64,
   };
 
-  // ✅ Log environment variable values and payload
-  console.log("📦 Sending Email with:");
-  console.log("Service ID:", process.env.REACT_APP_EMAILJS_SERVICE_ID);
-  console.log("Template ID:", process.env.REACT_APP_EMAILJS_TEMPLATE_ID);
-  console.log("User ID:", process.env.REACT_APP_EMAILJS_USER_ID);
+  // debugging
+  console.log("Sending Email with:");
   console.log("PDF Base64 length:", pdfBase64?.length);
   console.log("Template Params:", templateParams);
 
