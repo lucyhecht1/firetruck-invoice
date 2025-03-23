@@ -83,7 +83,13 @@ function App() {
       const blob = new Blob([byteArray], { type: "application/pdf" });
       const blobUrl = URL.createObjectURL(blob);
 
-      window.open(blobUrl, "_blank");
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "garage_invoice.pdf";
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
       setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
     } catch (err) {
